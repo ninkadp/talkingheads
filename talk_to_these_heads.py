@@ -11,7 +11,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 import sqlite3
 
-## 
+## get secret variables
 def load_config():
     # in order to keep private spotify client_id and client_secret from being hard-coded in the script,
     # i put them in a separate file that gets read by this function
@@ -19,6 +19,7 @@ def load_config():
     stream = open('config.yaml')
     user_config = yaml.safe_load(stream)
 
+## get list of songs via albums
 def get_artist_id(artist_name: str) -> str:
     results = sp.search(q = f'artist: {artist_name}', type = 'artist')
 
@@ -77,15 +78,12 @@ def get_songs(albums: list) -> dict:
     # song_uris = []
     # song_names = []
 
-    songs = []
-    for album in albums:
-        songs.append(sp.album_tracks(album))
+    songs = [sp.album_tracks(album) for album in albums]
 
     song_dict = {}
     for song in songs:
         for item in song['items']:
             song_dict[item['uri']] = item['name']
-
 
             # use the lines below to get name, id, uri
             # song_names.append(item['name'])
@@ -94,10 +92,12 @@ def get_songs(albums: list) -> dict:
             
     return song_dict
 
+## get songs to put on playlist
 def get_ten_random(song_dict: dict) -> dict:
     # return ten random songs from list of songs
     return {k: song_dict[k] for k in random.sample(list(song_dict),10)}
 
+## playlist stuff
 # when i learn more about classes, i think maybe playlist should be a class
 def create_playlist() -> str:
     # gather the bits and pieces of the playlist details and then create the playlist!
@@ -105,6 +105,7 @@ def create_playlist() -> str:
     playlist_name = f'The name of this playlist is Talking Heads: {date}'
     desc = f'Ten random Talking Heads songs to get you through the day: {date}'
     # for now the playlist has to be public so we can get the uri later
+
     sp.user_playlist_create(user=user_config['username_words'],name =playlist_name,public=True,collaborative=False,description=desc)
 
     return playlist_name
@@ -119,11 +120,10 @@ def get_playlist_id(playlist_name) -> str:
         if item['name'] == playlist_name:
             return item['id']
 
-        # what should happen if it isn't found?!
-
 def add_songs(playlist_id, uris_to_add_list: list):
     sp.user_playlist_add_tracks(user=user_config['username'], playlist_id=playlist_id, tracks=uris_to_add_list)
 
+## dataframe stuff for adding playlist to sqlite db
 def create_playlist_dataframe(song_names: list, song_uris: list, playlist_id: str):
     playlist_dict = {
         "song_name" : song_names
@@ -138,6 +138,7 @@ def create_playlist_dataframe(song_names: list, song_uris: list, playlist_id: st
 
     return song_df
 
+## validation
 def check_if_valid_data(df: pd.DataFrame) -> bool:
     # Check if dataframe is empty
     if df.empty:
@@ -150,6 +151,7 @@ def check_if_valid_data(df: pd.DataFrame) -> bool:
 
     return True
 
+## entire ETL process
 def run_etl():
     global sp
     global user_config
