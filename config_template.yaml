@@ -1,0 +1,13 @@
+# get these from spotify
+username: ''
+username_words: ''
+
+# get this from spotify developer site
+client_id: ''
+client_secret: ''
+
+# set this on spotify developer site
+redirect_uri: ''
+
+# set location for sqlite database
+database_location: ''
