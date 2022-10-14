@@ -28,11 +28,8 @@ def get_artist_id(artist_name: str) -> str:
 
     return artist_id
 
-def get_albums(artist_id: str) -> list:
-    # return list of talking heads album ids and names
-
-    # album_ids = []
-    # album_names = []
+## get a dictionary of talking heads album ids and names
+def get_albums(artist_id: str) -> dict:
 
     album_dict = {}
 
@@ -44,11 +41,9 @@ def get_albums(artist_id: str) -> list:
     for album in albums['items']:
         album_dict[album['id']] = album['name']
 
-        # album_ids.append(album['id'])
-        # album_names.append(album['name'])
-
     return album_dict
 
+## filter albums based on known "duplicates" (deluxe/expanded versions)
 def filter_albums(album_dict: dict) -> list:
     all_album_names = [album for id, album in album_dict.items()]
     all_album_ids = [album_id for album_id in album_dict]
@@ -73,10 +68,8 @@ def filter_albums(album_dict: dict) -> list:
     
     return filtered_album_ids
 
+## get a dictionary of song uri and name
 def get_songs(albums: list) -> dict:
-    # song_ids = []
-    # song_uris = []
-    # song_names = []
 
     songs = [sp.album_tracks(album) for album in albums]
 
@@ -84,28 +77,23 @@ def get_songs(albums: list) -> dict:
     for song in songs:
         for item in song['items']:
             song_dict[item['uri']] = item['name']
-
-            # use the lines below to get name, id, uri
-            # song_names.append(item['name'])
-            # song_ids.append(item['id'])
-            # song_uris.append(item['uri'])
             
     return song_dict
 
 ## get songs to put on playlist
+# todo: pass variable for number of songs, use 10 as default
 def get_ten_random(song_dict: dict) -> dict:
-    # return ten random songs from list of songs
+
     return {k: song_dict[k] for k in random.sample(list(song_dict),10)}
 
-## playlist stuff
-# when i learn more about classes, i think maybe playlist should be a class
+## create playlist and return its name
 def create_playlist() -> str:
     # gather the bits and pieces of the playlist details and then create the playlist!
     date = datetime.datetime.now().strftime('%m/%d/%Y')
     playlist_name = f'The name of this playlist is Talking Heads: {date}'
     desc = f'Ten random Talking Heads songs to get you through the day: {date}'
-    # for now the playlist has to be public so we can get the uri later
 
+    # for now the playlist has to be public so we can get the uri later
     sp.user_playlist_create(user=user_config['username_words'],name =playlist_name,public=True,collaborative=False,description=desc)
 
     return playlist_name
